@@ -25,7 +25,10 @@ onMounted(async () => {
     Next Day
   </button>
 
-  <button @click="sessionStore.startSession(saisonsStore.currentDay)">
+  <button @click="sessionStore.startSession(
+    saisonsStore.currentDay,
+    saisonsStore.saisons[0]
+  )">
     Lancer la séance
   </button>
 
@@ -33,6 +36,10 @@ onMounted(async () => {
     sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}</p>
 
   <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.remainingSeconds }} secondes</p>
+
+  <p>Index exercice : {{ sessionStore.currentExerciseIndex }}</p>
+
+
 
   <p>Nombre de saisons : {{ saisonsStore.saisons.length }}</p>
 
