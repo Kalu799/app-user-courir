@@ -14,7 +14,22 @@ export const useProgressStore = defineStore('progress', () => {
 
   const goToNextDay = (saison) => {
     const allDays = saison.semaines.flatMap(semaine => semaine.jours)
-    console.log(allDays)
+    //console.log(allDays)
+
+    const currentIndex = allDays.findIndex(day => day.id === currentDayId.value)
+    //console.log(currentIndex)
+
+    const nextDay = allDays[currentIndex + 1]
+    //console.log(nextDay)
+
+    if (nextDay) {
+      currentDayId.value = nextDay.id
+    }
+
+    if (!nextDay) {
+      console.log('Fin de la saison')
+      return
+    }
   }
 
   return {
