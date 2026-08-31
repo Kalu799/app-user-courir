@@ -13,6 +13,7 @@ const sessionStore = useSessionStore()
 onMounted(async () => {
   await saisonsStore.getSaisons()
   //console.log(saisons.value)
+  sessionStore.loadSession()
 })
 
 </script>
@@ -52,11 +53,10 @@ onMounted(async () => {
 
   <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.remainingSeconds }} secondes</p>
 
-  <p>Index exercice : {{ sessionStore.currentExerciseIndex }}</p>
-
-
-
-  <p>Nombre de saisons : {{ saisonsStore.saisons.length }}</p>
+  <p v-if="sessionStore.dayId && saisonsStore.currentDay">
+    Étape {{ sessionStore.currentExerciseIndex + 1 }}
+    sur {{ saisonsStore.currentDay.exercices.length }}
+  </p>
 
   <p v-if="saisonsStore.currentDay">
     Saison : {{ saisonsStore.saisons[0].label }}

@@ -24,6 +24,8 @@ export const useSessionStore = defineStore('session', () => {
     remainingSeconds.value = firstExercice.dureeMinutes * 60
     //console.log(remainingSeconds.value)
 
+    saveSession()
+
     startTimer(day, saison)
   }
 
@@ -32,9 +34,16 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const startTimer = (day, saison) => {
+
+    // check pour empêcher de lancer 2 fois le timer
+    if (timerInterval) return
+
     timerInterval = setInterval(() => {
       if(remainingSeconds.value > 0) {
         remainingSeconds.value--
+        if (remainingSeconds.value % 5 === 0) {
+          saveSession()
+        }
       }
       else {
         currentExerciseIndex.value++
@@ -54,12 +63,14 @@ export const useSessionStore = defineStore('session', () => {
           dayId.value = null
           currentExerciseIndex.value = 0
           remainingSeconds.value = 0
+          isPaused.value = false
+
+          localStorage.removeItem('activeSession')
           return
         }
         
-        if(nextExercice) {
-          remainingSeconds.value = nextExercice.dureeMinutes * 60
-        }
+        remainingSeconds.value = nextExercice.dureeMinutes * 60
+        saveSession()
 
       }
     }, 1000)
@@ -69,6 +80,7 @@ export const useSessionStore = defineStore('session', () => {
     isPaused.value = true
     clearInterval(timerInterval)
     timerInterval = null
+    saveSession()
   }
 
   const resumeSession = (day, saison) => {
@@ -84,6 +96,30 @@ export const useSessionStore = defineStore('session', () => {
     currentExerciseIndex.value = 0
     remainingSeconds.value = 0
     isPaused.value = false
+
+    localStorage.removeItem('activeSession')
+  }
+
+  const saveSession = () => {
+    const sessionData = {
+      dayId: dayId.value,
+      currentExerciseIndex: currentExerciseIndex.value,
+      remainingSeconds: remainingSeconds.value
+    }
+    localStorage.setItem('activeSession', JSON.stringify(sessionData))
+  }
+
+  const loadSession = () => {
+    const savedSession = localStorage.getItem('activeSession')
+    if (!savedSession) return
+
+    const sessionData = JSON.parse(savedSession)
+    console.log(sessionData)
+
+    dayId.value = sessionData.dayId
+    currentExerciseIndex.value = sessionData.currentExerciseIndex
+    remainingSeconds.value = sessionData.remainingSeconds
+    isPaused.value = true
   }
 
   return {
@@ -97,5 +133,7 @@ export const useSessionStore = defineStore('session', () => {
     pauseSession,
     resumeSession,
     stopSession,
+    saveSession,
+    loadSession,
   }
 })
