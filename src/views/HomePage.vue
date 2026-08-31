@@ -32,12 +32,14 @@ onMounted(async () => {
     Lancer la séance
   </button>
 
-  <button v-if="sessionStore.dayId" @click="sessionStore.pauseSession()">
+  <button v-if="sessionStore.dayId && !sessionStore.isPaused" @click="sessionStore.pauseSession()">
     Pause
   </button>
 
-  <button v-if="sessionStore.dayId"
-    @click="sessionStore.resumeSession(saisonsStore.currentDay, saisonsStore.saisons[0])">
+  <button v-if="sessionStore.dayId && sessionStore.isPaused" @click="sessionStore.resumeSession(
+    saisonsStore.currentDay,
+    saisonsStore.saisons[0]
+  )">
     Reprendre
   </button>
 
