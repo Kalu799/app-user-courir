@@ -4,9 +4,11 @@ import { onMounted } from 'vue'
 
 import { useProgressStore } from '@/stores/progress'
 import { useSaisonsStore } from '@/stores/saisons'
+import { useSessionStore } from '@/stores/session'
 
 const progressStore = useProgressStore()
 const saisonsStore = useSaisonsStore()
+const sessionStore = useSessionStore()
 
 onMounted(async () => {
   await saisonsStore.getSaisons()
@@ -22,6 +24,15 @@ onMounted(async () => {
   <button @click="progressStore.goToNextDay(saisonsStore.saisons[0])">
     Next Day
   </button>
+
+  <button @click="sessionStore.startSession(saisonsStore.currentDay)">
+    Lancer la séance
+  </button>
+
+  <p v-if="sessionStore.dayId && saisonsStore.currentDay">Exercice courant : {{
+    sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}</p>
+
+  <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.remainingSeconds }} secondes</p>
 
   <p>Nombre de saisons : {{ saisonsStore.saisons.length }}</p>
 
