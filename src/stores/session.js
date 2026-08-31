@@ -5,6 +5,7 @@ export const useSessionStore = defineStore('session', () => {
   const dayId = ref(null)
   const currentExerciseIndex = ref(0)
   const remainingSeconds = ref(0)
+  let timerInterval = null
 
   const startSession = (day) => {
     dayId.value = day.id
@@ -14,7 +15,9 @@ export const useSessionStore = defineStore('session', () => {
 
     const firstExercice = day.exercices[0]
     remainingSeconds.value = firstExercice.dureeMinutes * 60
-    console.log(remainingSeconds.value)
+    //console.log(remainingSeconds.value)
+
+    startTimer()
   }
 
   const getCurrentExercise = (day) => {
@@ -22,7 +25,9 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const startTimer = () => {
-
+    timerInterval = setInterval(() => {
+      remainingSeconds.value--
+    }, 1000)
   }
 
   return {
