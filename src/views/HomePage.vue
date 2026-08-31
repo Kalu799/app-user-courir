@@ -32,6 +32,10 @@ onMounted(async () => {
     Lancer la séance
   </button>
 
+  <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
+    Arrêter
+  </button>
+
   <button v-if="sessionStore.dayId && !sessionStore.isPaused" @click="sessionStore.pauseSession()">
     Pause
   </button>

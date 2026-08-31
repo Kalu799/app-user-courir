@@ -76,6 +76,16 @@ export const useSessionStore = defineStore('session', () => {
     startTimer(day, saison)
   }
 
+  const stopSession = () => {
+    clearInterval(timerInterval)
+    timerInterval = null
+
+    dayId.value = null
+    currentExerciseIndex.value = 0
+    remainingSeconds.value = 0
+    isPaused.value = false
+  }
+
   return {
     dayId,
     currentExerciseIndex,
@@ -86,5 +96,6 @@ export const useSessionStore = defineStore('session', () => {
     startTimer,
     pauseSession,
     resumeSession,
+    stopSession,
   }
 })
