@@ -137,11 +137,17 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <ul v-if="saisonsStore.currentDay" class="exercise-list">
-          <li v-for="(exercice, index) in saisonsStore.currentDay.exercices" :key="index" class="exercise-list__item">
-            {{ exercice.type }} — {{ exercice.dureeMinutes }} min
-          </li>
-        </ul>
+        <details v-if="saisonsStore.currentDay" class="exercise-details">
+          <summary class="exercise-details__summary">
+            Voir les détails des étapes
+          </summary>
+
+          <ul class="exercise-list">
+            <li v-for="(exercice, index) in saisonsStore.currentDay.exercices" :key="index" class="exercise-list__item">
+              {{ exercice.type }} — {{ exercice.dureeMinutes }} min
+            </li>
+          </ul>
+        </details>
 
         <button v-if="saisonsStore.currentDay" class="start-session-btn" @click="startSession">
           Lancer la séance
@@ -389,47 +395,27 @@ onUnmounted(() => {
    LISTE DES EXERCICES
    ========================================================= */
 
-.exercise-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  margin: 0 0 24px;
-  padding: 0;
-
-  list-style: none;
+.exercise-details {
+  margin-bottom: 24px;
 }
 
-.exercise-list__item {
-  position: relative;
+.exercise-details__summary {
+  padding: 12px 0;
 
-  padding: 10px 12px 10px 28px;
+  color: #022c4d;
 
-  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
 
-  background-color: #f7f8f5;
-
-  color: #374955;
-
-  font-size: 0.9rem;
-  line-height: 1.3;
+  cursor: pointer;
 }
 
-.exercise-list__item::before {
-  content: '';
+.exercise-details__summary::marker {
+  color: #85bc24;
+}
 
-  position: absolute;
-  top: 50%;
-  left: 12px;
-
-  width: 7px;
-  height: 7px;
-
-  border-radius: 50%;
-
-  background-color: #85bc24;
-
-  transform: translateY(-50%);
+.exercise-details[open] .exercise-details__summary {
+  margin-bottom: 8px;
 }
 
 
