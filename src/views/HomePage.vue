@@ -1,6 +1,6 @@
 <script setup>
 
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 
 import { useProgressStore } from '@/stores/progress'
 import { useSaisonsStore } from '@/stores/saisons'
@@ -14,6 +14,12 @@ onMounted(async () => {
   await saisonsStore.getSaisons()
   //console.log(saisons.value)
   sessionStore.loadSession()
+  sessionStore.initVisibilityListener()
+})
+
+onUnmounted(() => {
+  // retire l'eventListener quand la vue est démontée pour ne pas en cumuler plusieurs au cas ou
+  sessionStore.removeVisibilityListener()
 })
 
 </script>
