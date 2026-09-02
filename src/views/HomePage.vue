@@ -175,35 +175,39 @@ onUnmounted(() => {
 
 
   <!-- écran séance en cours -->
-  <section v-else>
-    <h2>
-      {{ sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}
-    </h2>
+  <section v-else class="session-screen">
+    <div class="session-container">
 
-    <p>
-      {{ sessionStore.formattedTime }}
-    </p>
+      <p class="session-step">
+        Étape {{ sessionStore.currentExerciseIndex + 1 }}
+        sur {{ saisonsStore.currentDay.exercices.length }}
+      </p>
 
-    <p>
-      Étape {{ sessionStore.currentExerciseIndex + 1 }}
-      sur {{ saisonsStore.currentDay.exercices.length }}
-    </p>
+      <h2 class="session-exercise">
+        {{ sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}
+      </h2>
 
-    <div class="session-actions">
-      <button v-if="!sessionStore.isPaused" @click="sessionStore.pauseSession()">
-        Pause
-      </button>
+      <p class="session-timer">
+        {{ sessionStore.formattedTime }}
+      </p>
 
-      <button v-else @click="sessionStore.resumeSession(
-        saisonsStore.currentDay,
-        saisonsStore.currentSaison
-      )">
-        Reprendre
-      </button>
+      <div class="session-actions">
+        <button v-if="!sessionStore.isPaused" class="session-main-btn" @click="sessionStore.pauseSession()">
+          Pause
+        </button>
 
-      <button @click="confirmStopSession">
-        Arrêter la séance
-      </button>
+        <button v-else class="session-main-btn" @click="sessionStore.resumeSession(
+          saisonsStore.currentDay,
+          saisonsStore.currentSaison
+        )">
+          Reprendre
+        </button>
+
+        <button class="session-stop-btn" @click="confirmStopSession">
+          Arrêter la séance
+        </button>
+      </div>
+
     </div>
   </section>
 
@@ -543,6 +547,167 @@ onUnmounted(() => {
 
   .program-card__season {
     font-size: 2rem;
+  }
+}
+
+/* =========================================================
+   ÉCRAN SÉANCE
+   ========================================================= */
+
+.session-screen {
+  min-height: 100%;
+  padding: 32px 16px 48px;
+
+  background-color: #022c4d;
+  color: #ffffff;
+}
+
+.session-container {
+  width: 100%;
+  max-width: 480px;
+
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   PROGRESSION DANS LA SÉANCE
+   ========================================================= */
+
+.session-step {
+  margin: 0 0 20px;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  color: rgb(255 255 255 / 75%);
+}
+
+
+/* =========================================================
+   EXERCICE COURANT
+   ========================================================= */
+
+.session-exercise {
+  margin: 0 0 16px;
+
+  font-size: clamp(2rem, 10vw, 3.5rem);
+  line-height: 1;
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  color: #85bc24;
+}
+
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+.session-timer {
+  margin: 20px 0 40px;
+
+  font-size: clamp(4.5rem, 22vw, 7rem);
+  line-height: 1;
+  font-weight: 900;
+
+  letter-spacing: -0.05em;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.session-actions {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 20px;
+}
+
+.session-main-btn {
+  width: 100%;
+  min-height: 68px;
+
+  padding: 16px 24px;
+
+  border: none;
+  border-radius: 18px;
+
+  background-color: #85bc24;
+  color: #ffffff;
+
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.session-main-btn:active {
+  transform: scale(0.98);
+}
+
+.session-main-btn:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 40%);
+  outline-offset: 4px;
+}
+
+
+/* =========================================================
+   ARRÊT DE LA SÉANCE
+   ========================================================= */
+
+.session-stop-btn {
+  padding: 12px 16px;
+
+  border: none;
+
+  background: transparent;
+  color: rgb(255 255 255 / 65%);
+
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  text-decoration: underline;
+
+  cursor: pointer;
+}
+
+.session-stop-btn:active {
+  opacity: 0.7;
+}
+
+
+/* =========================================================
+   TABLETTE / DESKTOP
+   ========================================================= */
+
+@media (min-width: 600px) {
+  .session-screen {
+    padding-top: 48px;
+  }
+
+  .session-main-btn {
+    max-width: 360px;
   }
 }
 </style>
