@@ -183,6 +183,16 @@ onUnmounted(() => {
         sur {{ saisonsStore.currentDay.exercices.length }}
       </p>
 
+      <div class="session-progress">
+        <div class="session-progress__bar" :style="{
+          width: `${((sessionStore.currentExerciseIndex + 1) / saisonsStore.currentDay.exercices.length) * 100}%`
+        }"></div>
+      </div>
+
+      <p v-if="sessionStore.isPaused" class="session-paused">
+        PAUSE
+      </p>
+
       <h2 class="session-exercise">
         {{ sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}
       </h2>
@@ -280,7 +290,7 @@ onUnmounted(() => {
    ========================================================= */
 
 .session-feedback {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .session-feedback:empty {
@@ -289,19 +299,20 @@ onUnmounted(() => {
 
 .session-feedback__message {
   margin: 0;
+  padding: 16px 18px;
 
-  padding: 14px 16px;
+  border-radius: 16px;
 
-  border-radius: 12px;
+  background-color: #ffffff;
+  border: 1px solid rgb(2 44 77 / 8%);
 
-  background-color: rgb(133 188 36 / 12%);
-  border: 1px solid rgb(133 188 36 / 35%);
+  box-shadow: 0 6px 20px rgb(2 44 77 / 6%);
 
   color: #022c4d;
 
   font-size: 0.95rem;
-  line-height: 1.4;
-  font-weight: 600;
+  line-height: 1.45;
+  font-weight: 700;
 }
 
 
@@ -589,6 +600,28 @@ onUnmounted(() => {
   color: rgb(255 255 255 / 75%);
 }
 
+.session-progress {
+  width: 100%;
+  height: 8px;
+
+  margin-bottom: 28px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background-color: rgb(255 255 255 / 15%);
+}
+
+.session-progress__bar {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background-color: #85bc24;
+
+  transition: width 0.3s ease;
+}
 
 /* =========================================================
    EXERCICE COURANT
@@ -621,6 +654,22 @@ onUnmounted(() => {
   letter-spacing: -0.05em;
 
   font-variant-numeric: tabular-nums;
+}
+
+.session-paused {
+  margin: 0 0 12px;
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  background-color: rgb(255 255 255 / 12%);
+  border: 1px solid rgb(255 255 255 / 20%);
+
+  color: #ffffff;
+
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
 }
 
 

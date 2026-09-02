@@ -102,7 +102,7 @@ export const useSessionStore = defineStore('session', () => {
         saveSession()
 
       }
-    }, 1)
+    }, 1000)
   }
 
   const pauseSession = async () => {
