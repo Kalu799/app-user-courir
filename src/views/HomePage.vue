@@ -33,6 +33,9 @@ onMounted(async () => {
     Lancer la séance
   </button>
 
+  <br>
+  <br>
+
   <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
     Arrêter
   </button>
@@ -47,6 +50,22 @@ onMounted(async () => {
   )">
     Reprendre
   </button>
+
+  <br>
+  <br>
+
+  <button @click="progressStore.resetSaison()">
+    Reset saison
+  </button>
+
+  <button @click="progressStore.resetWeek(saisonsStore.saisons[0])">
+    Reset semaine
+  </button>
+
+  <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
+    Reset jour
+  </button>
+
 
   <p v-if="sessionStore.dayId && saisonsStore.currentDay">Exercice courant : {{
     sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}</p>

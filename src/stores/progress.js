@@ -32,8 +32,31 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
+  const resetSaison = () => {
+    currentDayId.value = 'saison1-semaine1-jour1'
+  }
+
+  const resetWeek = (saison) => {
+    //console.log(saison)
+
+    // récup de la semaine en cours
+    const currentWeek = saison.semaines.find(week => week.jours.some(day => day.id === currentDayId.value)) ?? null
+    // sécu si pas de currentWeek -> on stop
+    if(!currentWeek) return
+
+    // récup du 1er jour de la semaine
+    const firstDay = currentWeek.jours[0]
+    // sécu si pas de firstDay -> on stop
+    if(!firstDay) return
+
+    // change l'id du jour en cours par celui du 1er jour de la semaine en cours
+    currentDayId.value = firstDay.id
+  }
+
   return {
     currentDayId,
-    goToNextDay
+    goToNextDay,
+    resetSaison,
+    resetWeek,
   }
 })
