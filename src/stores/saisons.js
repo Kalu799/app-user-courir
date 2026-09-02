@@ -36,11 +36,22 @@ export const useSaisonsStore = defineStore('saisons', () => {
     return saison.semaines.find(week => week.jours.some(day => day.id === currentDay.value.id)) ?? null
   })
 
+  // petit résumé de la séance
+  const currentDayDuration = computed(() => {
+    if (!currentDay.value) return 0
+
+    return currentDay.value.exercices.reduce(
+      (total, exercice) => total + exercice.dureeMinutes,
+      0
+    )
+  })
+
   return {
     saisons,
     currentSaison,
     currentWeek,
     currentDay,
+    currentDayDuration,
     getSaisons,
   }
 })

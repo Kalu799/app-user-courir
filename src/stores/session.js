@@ -13,6 +13,7 @@ export const useSessionStore = defineStore('session', () => {
   let currentAudio = null
   const isPaused = ref(false)
   let wakeLock = null
+  const sessionStatus = ref(null)
 
   const formattedTime = computed(() => {
     const minutes = Math.floor(remainingSeconds.value / 60)
@@ -29,6 +30,8 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const startSession = async (day, saison) => {
+    progressStore.hasStartedSaison = true
+
     isPaused.value = false
 
     dayId.value = day.id
@@ -59,7 +62,7 @@ export const useSessionStore = defineStore('session', () => {
     if (timerInterval) return
 
     timerInterval = setInterval(async () => {
-      if(remainingSeconds.value > 0) {
+      if (remainingSeconds.value > 0) {
         remainingSeconds.value--
         if (remainingSeconds.value % 5 === 0) {
           saveSession()
@@ -69,16 +72,20 @@ export const useSessionStore = defineStore('session', () => {
         currentExerciseIndex.value++
         const nextExercice = day.exercices[currentExerciseIndex.value]
 
-        if(!nextExercice) {
-          console.log('Séance terminée')
-
+        if (!nextExercice) {
           // arrêt du timer + audio
           clearRuntimeSession()
 
           await releaseWakeLock()
-          
+
           // passage au jour suivant
-          progressStore.goToNextDay(saison)
+          const progressStatus = progressStore.goToNextDay(saison)
+
+          if (progressStatus === 'season-completed') {
+            sessionStatus.value = 'season-completed'
+          } else {
+            sessionStatus.value = 'completed'
+          }
 
           // reset
           dayId.value = null
@@ -89,13 +96,13 @@ export const useSessionStore = defineStore('session', () => {
           localStorage.removeItem('activeSession')
           return
         }
-        
+
         remainingSeconds.value = nextExercice.dureeMinutes * 60
         playExerciseSound(nextExercice)
         saveSession()
 
       }
-    }, 1000)
+    }, 1)
   }
 
   const pauseSession = async () => {
@@ -114,7 +121,7 @@ export const useSessionStore = defineStore('session', () => {
 
     const currentExercice = day.exercices[currentExerciseIndex.value]
 
-    if(currentExercice) {
+    if (currentExercice) {
       playExerciseSound(currentExercice)
     }
 
@@ -134,6 +141,8 @@ export const useSessionStore = defineStore('session', () => {
     currentExerciseIndex.value = 0
     remainingSeconds.value = 0
     isPaused.value = false
+
+    sessionStatus.value = 'stopped'
 
     // supp sauvegarde session dans localStorage
     localStorage.removeItem('activeSession')
@@ -165,9 +174,9 @@ export const useSessionStore = defineStore('session', () => {
 
   const playExerciseSound = (exercise) => {
     const soundPath = exerciseSounds[exercise.type]
-    if(!soundPath) return
+    if (!soundPath) return
     // évite de jouer 2 sons en même temps
-    if(currentAudio) {
+    if (currentAudio) {
       currentAudio.pause()
       currentAudio.currentTime = 0
     }
@@ -178,23 +187,23 @@ export const useSessionStore = defineStore('session', () => {
 
   const requestWakeLock = async () => {
     // si le wakelock n'est pas supporter -> stop
-    if(!('wakeLock' in navigator)) return
+    if (!('wakeLock' in navigator)) return
 
     wakeLock = await navigator.wakeLock.request('screen')
-    console.log('start wakeLock : ' + wakeLock)
+    //console.log('start wakeLock : ' + wakeLock)
   }
 
   const releaseWakeLock = async () => {
     // si wakeLock n'est pas actif -> stop
-    if(!wakeLock) return
+    if (!wakeLock) return
 
     await wakeLock.release()
     wakeLock = null
-    console.log('fin wakeLock : ' + wakeLock)
+    //console.log('fin wakeLock : ' + wakeLock)
   }
 
   const handleVisibilityChange = async () => {
-    if(document.visibilityState === 'visible' && dayId.value && !isPaused.value) {
+    if (document.visibilityState === 'visible' && dayId.value && !isPaused.value) {
       await requestWakeLock()
     }
   }
@@ -209,13 +218,13 @@ export const useSessionStore = defineStore('session', () => {
 
   const clearRuntimeSession = () => {
     // arrêt du timer
-    if(timerInterval) {
+    if (timerInterval) {
       clearInterval(timerInterval)
       timerInterval = null
     }
 
     // arrêt de l'audio
-    if(currentAudio) {
+    if (currentAudio) {
       currentAudio.pause()
       currentAudio.currentTime = 0
       currentAudio = null
@@ -228,6 +237,7 @@ export const useSessionStore = defineStore('session', () => {
     remainingSeconds,
     isPaused,
     formattedTime,
+    sessionStatus,
     startSession,
     getCurrentExercise,
     startTimer,

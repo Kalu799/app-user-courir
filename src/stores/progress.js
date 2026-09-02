@@ -11,54 +11,60 @@ export const useProgressStore = defineStore('progress', () => {
   watch(currentDayId, (newDayId) => {
     localStorage.setItem('currentDayId', newDayId)
   })
-  
+
   const savedSaisonId = localStorage.getItem('currentSaisonId')
-  const currentSaisonId = ref( savedSaisonId ?? 'saison1')
+  const currentSaisonId = ref(savedSaisonId ?? 'saison1')
 
   watch(currentSaisonId, (newSaisonId) => {
     localStorage.setItem('currentSaisonId', newSaisonId)
+  })
+
+  const hasStartedSaison = ref(
+    localStorage.getItem('hasStartedSaison') === 'true'
+  )
+
+  watch(hasStartedSaison, (value) => {
+    localStorage.setItem('hasStartedSaison', value)
   })
 
   const changeSaison = (saison) => {
     currentSaisonId.value = saison.id
 
     const firstWeek = saison.semaines[0]
-    if(!firstWeek) return
+    if (!firstWeek) return
 
     const firstDay = firstWeek.jours[0]
-    if(!firstDay) return
+    if (!firstDay) return
 
     currentDayId.value = firstDay.id
   }
 
   const goToNextDay = (saison) => {
     const allDays = saison.semaines.flatMap(semaine => semaine.jours)
-    //console.log(allDays)
 
-    const currentIndex = allDays.findIndex(day => day.id === currentDayId.value)
-    //console.log(currentIndex)
+    const currentIndex = allDays.findIndex(
+      day => day.id === currentDayId.value
+    )
 
     const nextDay = allDays[currentIndex + 1]
-    //console.log(nextDay)
-
-    if (nextDay) {
-      currentDayId.value = nextDay.id
-    }
 
     if (!nextDay) {
-      console.log('Fin de la saison')
-      return
+      hasStartedSaison.value = false
+      return 'season-completed'
     }
+
+    currentDayId.value = nextDay.id
+    return 'day-completed'
   }
 
   const resetSaison = (saison) => {
     // récup 1ère semaine de la saison
     const firstWeek = saison.semaines[0]
-    if(!firstWeek) return
+    if (!firstWeek) return
 
     // récup du 1er jour de la semaine
     const firstDay = firstWeek.jours[0]
-    if(!firstDay) return
+    if (!firstDay) return
 
     currentDayId.value = firstDay.id
   }
@@ -69,12 +75,12 @@ export const useProgressStore = defineStore('progress', () => {
     // récup de la semaine en cours
     const currentWeek = saison.semaines.find(week => week.jours.some(day => day.id === currentDayId.value)) ?? null
     // sécu si pas de currentWeek -> on stop
-    if(!currentWeek) return
+    if (!currentWeek) return
 
     // récup du 1er jour de la semaine
     const firstDay = currentWeek.jours[0]
     // sécu si pas de firstDay -> on stop
-    if(!firstDay) return
+    if (!firstDay) return
 
     // change l'id du jour en cours par celui du 1er jour de la semaine en cours
     currentDayId.value = firstDay.id
@@ -83,6 +89,7 @@ export const useProgressStore = defineStore('progress', () => {
   return {
     currentDayId,
     currentSaisonId,
+    hasStartedSaison,
     changeSaison,
     goToNextDay,
     resetSaison,

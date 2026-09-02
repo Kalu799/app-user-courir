@@ -6,6 +6,8 @@
 
   <RouterLink to="/">Home</RouterLink>
 
+  <hr>
+
   <div class="wrapper">
     <router-view></router-view>
   </div>
