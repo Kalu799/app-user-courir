@@ -51,7 +51,7 @@ onMounted(async () => {
   <p v-if="sessionStore.dayId && saisonsStore.currentDay">Exercice courant : {{
     sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}</p>
 
-  <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.remainingSeconds }} secondes</p>
+  <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.formattedTime }} secondes</p>
 
   <p v-if="sessionStore.dayId && saisonsStore.currentDay">
     Étape {{ sessionStore.currentExerciseIndex + 1 }}

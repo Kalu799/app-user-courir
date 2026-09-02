@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 import { useProgressStore } from './progress'
 
@@ -10,7 +10,22 @@ export const useSessionStore = defineStore('session', () => {
   const currentExerciseIndex = ref(0)
   const remainingSeconds = ref(0)
   let timerInterval = null
+  let currentAudio = null
   const isPaused = ref(false)
+
+  const formattedTime = computed(() => {
+    const minutes = Math.floor(remainingSeconds.value / 60)
+    const seconds = remainingSeconds.value % 60
+    // .padStart(2, "0") fait en sorte que le string fasse min 2 char et si il n'en fait qu'un, on ajoute un "0" au début
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  })
+
+  const exerciseSounds = {
+    echauffement: '/sons/echauffement.mp3',
+    trotte: '/sons/trottes.mp3',
+    marche: '/sons/marches.mp3',
+    etirement: '/sons/etirements.mp3'
+  }
 
   const startSession = (day, saison) => {
     isPaused.value = false
@@ -23,6 +38,8 @@ export const useSessionStore = defineStore('session', () => {
     const firstExercice = day.exercices[0]
     remainingSeconds.value = firstExercice.dureeMinutes * 60
     //console.log(remainingSeconds.value)
+
+    playExerciseSound(firstExercice)
 
     saveSession()
 
@@ -52,9 +69,8 @@ export const useSessionStore = defineStore('session', () => {
         if(!nextExercice) {
           console.log('Séance terminée')
 
-          // arrêt et reset du timer
-          clearInterval(timerInterval)
-          timerInterval = null
+          // arrêt du timer + audio
+          clearRuntimeSession()
           
           // passage au jour suivant
           progressStore.goToNextDay(saison)
@@ -70,6 +86,7 @@ export const useSessionStore = defineStore('session', () => {
         }
         
         remainingSeconds.value = nextExercice.dureeMinutes * 60
+        playExerciseSound(nextExercice)
         saveSession()
 
       }
@@ -77,26 +94,37 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const pauseSession = () => {
+    // met en pause
     isPaused.value = true
-    clearInterval(timerInterval)
-    timerInterval = null
+    // arrêt timer + ausio
+    clearRuntimeSession()
+    // save la session en cours
     saveSession()
   }
 
   const resumeSession = (day, saison) => {
     isPaused.value = false
+
+    const currentExercice = day.exercices[currentExerciseIndex.value]
+
+    if(currentExercice) {
+      playExerciseSound(currentExercice)
+    }
+
     startTimer(day, saison)
   }
 
   const stopSession = () => {
-    clearInterval(timerInterval)
-    timerInterval = null
+    // arrêt timer + audio
+    clearRuntimeSession()
 
+    // reset
     dayId.value = null
     currentExerciseIndex.value = 0
     remainingSeconds.value = 0
     isPaused.value = false
 
+    // supp sauvegarde session dans localStorage
     localStorage.removeItem('activeSession')
   }
 
@@ -114,7 +142,9 @@ export const useSessionStore = defineStore('session', () => {
     if (!savedSession) return
 
     const sessionData = JSON.parse(savedSession)
-    console.log(sessionData)
+    //console.log(sessionData)
+
+    clearRuntimeSession()
 
     dayId.value = sessionData.dayId
     currentExerciseIndex.value = sessionData.currentExerciseIndex
@@ -122,11 +152,40 @@ export const useSessionStore = defineStore('session', () => {
     isPaused.value = true
   }
 
+  const playExerciseSound = (exercise) => {
+    const soundPath = exerciseSounds[exercise.type]
+    if(!soundPath) return
+    // évite de jouer 2 sons en même temps
+    if(currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+    }
+    // crée et lance le nouveau son
+    currentAudio = new Audio(soundPath)
+    currentAudio.play()
+  }
+
+  const clearRuntimeSession = () => {
+    // arrêt du timer
+    if(timerInterval) {
+      clearInterval(timerInterval)
+      timerInterval = null
+    }
+
+    // arrêt de l'audio
+    if(currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+      currentAudio = null
+    }
+  }
+
   return {
     dayId,
     currentExerciseIndex,
     remainingSeconds,
     isPaused,
+    formattedTime,
     startSession,
     getCurrentExercise,
     startTimer,
