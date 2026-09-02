@@ -20,79 +20,108 @@ onMounted(async () => {
 
 <template>
 
-  <h1>Homepage</h1>
+  <br>
 
-  <button @click="progressStore.goToNextDay(saisonsStore.saisons[0])">
+  <button @click="progressStore.goToNextDay(saisonsStore.currentSaison)">
     Next Day
   </button>
 
-  <button @click="sessionStore.startSession(
-    saisonsStore.currentDay,
-    saisonsStore.saisons[0]
-  )">
-    Lancer la séance
-  </button>
-
-  <br>
   <br>
 
-  <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
-    Arrêter
-  </button>
+  <div class="reset-btns-wrapper">
 
-  <button v-if="sessionStore.dayId && !sessionStore.isPaused" @click="sessionStore.pauseSession()">
-    Pause
-  </button>
+    <button @click="progressStore.resetSaison(saisonsStore.currentSaison)">
+      Reset saison
+    </button>
 
-  <button v-if="sessionStore.dayId && sessionStore.isPaused" @click="sessionStore.resumeSession(
-    saisonsStore.currentDay,
-    saisonsStore.saisons[0]
-  )">
-    Reprendre
-  </button>
+    <button @click="progressStore.resetWeek(saisonsStore.currentSaison)">
+      Reset semaine
+    </button>
 
-  <br>
-  <br>
+    <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
+      Reset jour
+    </button>
 
-  <button @click="progressStore.resetSaison()">
-    Reset saison
-  </button>
-
-  <button @click="progressStore.resetWeek(saisonsStore.saisons[0])">
-    Reset semaine
-  </button>
-
-  <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
-    Reset jour
-  </button>
+  </div>
 
 
-  <p v-if="sessionStore.dayId && saisonsStore.currentDay">Exercice courant : {{
-    sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}</p>
+  <div class="current-saison-wrapper">
 
-  <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.formattedTime }} secondes</p>
+    <h2>Selection de la saison :</h2>
 
-  <p v-if="sessionStore.dayId && saisonsStore.currentDay">
-    Étape {{ sessionStore.currentExerciseIndex + 1 }}
-    sur {{ saisonsStore.currentDay.exercices.length }}
-  </p>
+    <select :value="progressStore.currentSaisonId"
+      @change="progressStore.changeSaison(saisonsStore.saisons.find(saison => saison.id === $event.target.value))">
+      <option v-for="saison in saisonsStore.saisons" :key="saison.id" :value="saison.id">
+        {{ saison.label }}
+      </option>
+    </select>
 
-  <p v-if="saisonsStore.currentDay">
-    Saison : {{ saisonsStore.saisons[0].label }}
-  </p>
+    <p v-if="saisonsStore.currentSaison">
+      Saison : {{ saisonsStore.currentSaison.label }}
+    </p>
 
-  <p v-if="saisonsStore.currentWeek">
-    Semaine : {{ saisonsStore.currentWeek.numero }}
-  </p>
+    <p v-if="saisonsStore.currentWeek">
+      Semaine : {{ saisonsStore.currentWeek.numero }}
+    </p>
 
-  <p v-if="saisonsStore.currentDay">
-    Jour : {{ saisonsStore.currentDay.label }}
-  </p>
+    <p v-if="saisonsStore.currentDay">
+      Jour : {{ saisonsStore.currentDay.label }}
+    </p>
 
-  <ul v-if="saisonsStore.currentDay">
-    <li v-for="(exercice, index) in saisonsStore.currentDay.exercices" :key="index">
-      {{ exercice.type }} - {{ exercice.dureeMinutes }} min
-    </li>
-  </ul>
+    <ul v-if="saisonsStore.currentDay">
+      <li v-for="(exercice, index) in saisonsStore.currentDay.exercices" :key="index">
+        {{ exercice.type }} - {{ exercice.dureeMinutes }} min
+      </li>
+    </ul>
+
+  </div>
+
+
+  <div class="startSess-btn-wrapper">
+
+    <button @click="sessionStore.startSession(
+      saisonsStore.currentDay,
+      saisonsStore.currentSaison
+    )">
+      Lancer la séance
+    </button>
+
+  </div>
+
+
+  <div class="current-exo-wrapper">
+
+    <h2 v-if="sessionStore.dayId">Exercice en cours :</h2>
+
+    <p v-if="sessionStore.dayId && saisonsStore.currentDay">Exercice courant : {{
+      sessionStore.getCurrentExercise(saisonsStore.currentDay)?.type }}</p>
+
+    <p v-if="sessionStore.dayId">Temps restant : {{ sessionStore.formattedTime }} secondes</p>
+
+    <p v-if="sessionStore.dayId && saisonsStore.currentDay">
+      Étape {{ sessionStore.currentExerciseIndex + 1 }}
+      sur {{ saisonsStore.currentDay.exercices.length }}
+    </p>
+
+    <div class="session-btns-wrapper">
+
+      <button v-if="sessionStore.dayId" @click="sessionStore.stopSession()">
+        Arrêter
+      </button>
+
+      <button v-if="sessionStore.dayId && !sessionStore.isPaused" @click="sessionStore.pauseSession()">
+        Pause
+      </button>
+
+      <button v-if="sessionStore.dayId && sessionStore.isPaused" @click="sessionStore.resumeSession(
+        saisonsStore.currentDay,
+        saisonsStore.currentSaison
+      )">
+        Reprendre
+      </button>
+
+    </div>
+
+  </div>
 
 </template>

@@ -11,13 +11,17 @@ export const useSaisonsStore = defineStore('saisons', () => {
 
   const getSaisons = async () => {
     await fetch('http://localhost:3000/api/saisons')
-      .then(res => res.json())
-      .then((res) => { saisons.value = res })
-      .catch(err => { console.log(err) })
+    .then(res => res.json())
+    .then((res) => { saisons.value = res })
+    .catch(err => { console.log(err) })
   }
+  
+  const currentSaison = computed(() => {
+    return saisons.value.find(saison => saison.id === progressStore.currentSaisonId) ?? null
+  })
 
   const currentDay = computed(() => {
-    const saison = saisons.value[0]
+    const saison = currentSaison.value
     if (!saison) return null
 
     const allDays = saison.semaines.flatMap(semaine => semaine.jours)
@@ -26,7 +30,7 @@ export const useSaisonsStore = defineStore('saisons', () => {
   })
 
   const currentWeek = computed(() => {
-    const saison = saisons.value[0]
+    const saison = currentSaison.value
     if (!saison || !currentDay.value) return null
 
     return saison.semaines.find(week => week.jours.some(day => day.id === currentDay.value.id)) ?? null
@@ -34,8 +38,9 @@ export const useSaisonsStore = defineStore('saisons', () => {
 
   return {
     saisons,
-    getSaisons,
+    currentSaison,
+    currentWeek,
     currentDay,
-    currentWeek
+    getSaisons,
   }
 })

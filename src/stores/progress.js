@@ -11,6 +11,25 @@ export const useProgressStore = defineStore('progress', () => {
   watch(currentDayId, (newDayId) => {
     localStorage.setItem('currentDayId', newDayId)
   })
+  
+  const savedSaisonId = localStorage.getItem('currentSaisonId')
+  const currentSaisonId = ref( savedSaisonId ?? 'saison1')
+
+  watch(currentSaisonId, (newSaisonId) => {
+    localStorage.setItem('currentSaisonId', newSaisonId)
+  })
+
+  const changeSaison = (saison) => {
+    currentSaisonId.value = saison.id
+
+    const firstWeek = saison.semaines[0]
+    if(!firstWeek) return
+
+    const firstDay = firstWeek.jours[0]
+    if(!firstDay) return
+
+    currentDayId.value = firstDay.id
+  }
 
   const goToNextDay = (saison) => {
     const allDays = saison.semaines.flatMap(semaine => semaine.jours)
@@ -32,8 +51,16 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
-  const resetSaison = () => {
-    currentDayId.value = 'saison1-semaine1-jour1'
+  const resetSaison = (saison) => {
+    // récup 1ère semaine de la saison
+    const firstWeek = saison.semaines[0]
+    if(!firstWeek) return
+
+    // récup du 1er jour de la semaine
+    const firstDay = firstWeek.jours[0]
+    if(!firstDay) return
+
+    currentDayId.value = firstDay.id
   }
 
   const resetWeek = (saison) => {
@@ -55,6 +82,8 @@ export const useProgressStore = defineStore('progress', () => {
 
   return {
     currentDayId,
+    currentSaisonId,
+    changeSaison,
     goToNextDay,
     resetSaison,
     resetWeek,
