@@ -10,7 +10,7 @@ export const useSaisonsStore = defineStore('saisons', () => {
   const saisons = ref([])
 
   const getSaisons = async () => {
-    await fetch('http://localhost:3000/api/saisons')
+    await fetch(`${import.meta.env.VITE_API_URL}/api/saisons`)
     .then(res => res.json())
     .then((res) => { saisons.value = res })
     .catch(err => { console.log(err) })
