@@ -37,7 +37,7 @@ const confirmResetWeek = () => {
 
 const confirmResetSaison = async () => {
   const confirmed = window.confirm(
-    'Voulez-vous vraiment recommencer toute la saison ? Toute votre progression sur ce programme sera réinitialisée.'
+    'Voulez-vous vraiment recommencer tout le programme ? Toute votre progression sur ce programme sera réinitialisée.'
   )
 
   if (!confirmed) return
@@ -121,8 +121,9 @@ onUnmounted(() => {
         </p>
 
         <div class="program-card__progress">
-          <p v-if="saisonsStore.currentWeek" class="program-card__week">
+          <p v-if="saisonsStore.currentWeek && saisonsStore.currentSaison" class="program-card__week">
             Semaine {{ saisonsStore.currentWeek.numero }}
+            / {{ saisonsStore.currentSaison.semaines.length }}
           </p>
 
           <p v-if="saisonsStore.currentDay" class="program-card__day">
@@ -168,7 +169,7 @@ onUnmounted(() => {
           </button>
 
           <button class="progress-settings__btn progress-settings__btn--danger" @click="confirmResetSaison">
-            Recommencer la saison
+            Recommencer le programme
           </button>
         </div>
       </div>

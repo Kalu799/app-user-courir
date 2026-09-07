@@ -18,7 +18,7 @@ export default defineConfig({
         description: 'Application de course guidée pour se mettre à la course à pied.',
         display: 'standalone',
         theme_color: '#85BC24',
-        background_color: '#022C4D',
+        background_color: '#FFFFFF',
         icons: [
           {
             src: '/icons/logo-192-192.png',
