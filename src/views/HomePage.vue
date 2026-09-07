@@ -10,8 +10,6 @@ const progressStore = useProgressStore()
 const saisonsStore = useSaisonsStore()
 const sessionStore = useSessionStore()
 
-const showResetOptions = ref(false)
-
 const confirmStopSession = async () => {
   const confirmed = window.confirm(
     'Voulez-vous vraiment arrêter la séance ? Votre progression dans cette séance sera perdue.'
@@ -22,32 +20,6 @@ const confirmStopSession = async () => {
   await sessionStore.stopSession()
 
   //feedbackMessage.value = 'Séance arrêtée. Votre progression n’a pas été modifiée.'
-}
-
-const confirmResetWeek = () => {
-  const confirmed = window.confirm(
-    'Voulez-vous vraiment recommencer cette semaine ? Vous reviendrez au premier jour de la semaine.'
-  )
-
-  if (!confirmed) return
-
-  progressStore.resetWeek(saisonsStore.currentSaison)
-  showResetOptions.value = false
-}
-
-const confirmResetSaison = async () => {
-  const confirmed = window.confirm(
-    'Voulez-vous vraiment recommencer tout le programme ? Toute votre progression sur ce programme sera réinitialisée.'
-  )
-
-  if (!confirmed) return
-
-  await progressStore.resetSaison(
-    saisonsStore.currentSaison
-  )
-
-  progressStore.hasStartedSaison = false
-  showResetOptions.value = false
 }
 
 const startSession = () => {
@@ -156,22 +128,6 @@ onUnmounted(() => {
         <button v-if="saisonsStore.currentDay" class="start-session-btn" @click="startSession">
           Lancer la séance
         </button>
-      </div>
-
-      <div class="progress-settings">
-        <button class="progress-settings__toggle" @click="showResetOptions = !showResetOptions">
-          Gérer ma progression
-        </button>
-
-        <div v-if="showResetOptions" class="progress-settings__actions">
-          <button class="progress-settings__btn" @click="confirmResetWeek">
-            Recommencer la semaine
-          </button>
-
-          <button class="progress-settings__btn progress-settings__btn--danger" @click="confirmResetSaison">
-            Recommencer le programme
-          </button>
-        </div>
       </div>
 
     </div>
