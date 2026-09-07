@@ -35,14 +35,17 @@ const confirmResetWeek = () => {
   showResetOptions.value = false
 }
 
-const confirmResetSaison = () => {
+const confirmResetSaison = async () => {
   const confirmed = window.confirm(
     'Voulez-vous vraiment recommencer toute la saison ? Toute votre progression sur ce programme sera réinitialisée.'
   )
 
   if (!confirmed) return
 
-  progressStore.resetSaison(saisonsStore.currentSaison)
+  await progressStore.resetSaison(
+    saisonsStore.currentSaison
+  )
+
   progressStore.hasStartedSaison = false
   showResetOptions.value = false
 }

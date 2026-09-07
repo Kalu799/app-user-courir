@@ -82,7 +82,7 @@ export const useSessionStore = defineStore('session', () => {
           await releaseWakeLock()
 
           // passage au jour suivant
-          const progressStatus = progressStore.goToNextDay(saison)
+          const progressStatus = await progressStore.goToNextDay(saison)
 
           if (progressStatus === 'season-completed') {
             sessionStatus.value = 'season-completed'

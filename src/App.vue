@@ -1,11 +1,17 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useProgressStore } from './stores/progress';
 
 const authStore = useAuthStore()
+const progressStore = useProgressStore()
 
-onMounted(() => {
-  authStore.fetchMe()
+onMounted(async () => {
+  await authStore.fetchMe()
+
+  if (authStore.user?.currentSessionId) {
+    progressStore.currentDayId = authStore.user.currentSessionId
+  }
 })
 </script>
 

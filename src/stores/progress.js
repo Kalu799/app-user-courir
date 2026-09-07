@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { useAuthStore } from './auth'
+
 
 export const useProgressStore = defineStore('progress', () => {
+  const authStore = useAuthStore()
+
   const savedDayId = localStorage.getItem('currentDayId')
 
   const currentDayId = ref(
@@ -39,7 +43,25 @@ export const useProgressStore = defineStore('progress', () => {
     currentDayId.value = firstDay.id
   }
 
-  const goToNextDay = (saison) => {
+  const saveProgress = async (currentSessionId) => {
+    if (!authStore.token) return
+
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/users/me/progress`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authStore.token}`,
+        },
+        body: JSON.stringify({
+          currentSessionId,
+        }),
+      }
+    )
+  }
+
+  const goToNextDay = async (saison) => {
     const allDays = saison.semaines.flatMap(semaine => semaine.jours)
 
     const currentIndex = allDays.findIndex(
@@ -50,40 +72,46 @@ export const useProgressStore = defineStore('progress', () => {
 
     if (!nextDay) {
       hasStartedSaison.value = false
+
+      await saveProgress(null)
+
       return 'season-completed'
     }
 
     currentDayId.value = nextDay.id
+
+    await saveProgress(nextDay.id)
+
     return 'day-completed'
   }
 
-  const resetSaison = (saison) => {
-    // récup 1ère semaine de la saison
+  const resetSaison = async (saison) => {
     const firstWeek = saison.semaines[0]
     if (!firstWeek) return
 
-    // récup du 1er jour de la semaine
     const firstDay = firstWeek.jours[0]
     if (!firstDay) return
 
     currentDayId.value = firstDay.id
+
+    await saveProgress(firstDay.id)
   }
 
-  const resetWeek = (saison) => {
-    //console.log(saison)
+  const resetWeek = async (saison) => {
+    const currentWeek = saison.semaines.find(
+      week => week.jours.some(
+        day => day.id === currentDayId.value
+      )
+    )
 
-    // récup de la semaine en cours
-    const currentWeek = saison.semaines.find(week => week.jours.some(day => day.id === currentDayId.value)) ?? null
-    // sécu si pas de currentWeek -> on stop
     if (!currentWeek) return
 
-    // récup du 1er jour de la semaine
     const firstDay = currentWeek.jours[0]
-    // sécu si pas de firstDay -> on stop
     if (!firstDay) return
 
-    // change l'id du jour en cours par celui du 1er jour de la semaine en cours
     currentDayId.value = firstDay.id
+
+    await saveProgress(firstDay.id)
   }
 
   return {
