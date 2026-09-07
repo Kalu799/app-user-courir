@@ -11,11 +11,11 @@ export const useSaisonsStore = defineStore('saisons', () => {
 
   const getSaisons = async () => {
     await fetch(`${import.meta.env.VITE_API_URL}/api/saisons`)
-    .then(res => res.json())
-    .then((res) => { saisons.value = res })
-    .catch(err => { console.log(err) })
+      .then(res => res.json())
+      .then((res) => { saisons.value = res })
+      .catch(err => { console.log(err) })
   }
-  
+
   const currentSaison = computed(() => {
     return saisons.value.find(saison => saison.id === progressStore.currentSaisonId) ?? null
   })
@@ -41,7 +41,7 @@ export const useSaisonsStore = defineStore('saisons', () => {
     if (!currentDay.value) return 0
 
     return currentDay.value.exercices.reduce(
-      (total, exercice) => total + exercice.dureeMinutes,
+      (total, exercice) => total + Number(exercice.dureeMinutes),
       0
     )
   })

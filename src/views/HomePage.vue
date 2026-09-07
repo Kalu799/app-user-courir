@@ -21,7 +21,7 @@ const confirmStopSession = async () => {
 
   await sessionStore.stopSession()
 
-  feedbackMessage.value = 'Séance arrêtée. Votre progression n’a pas été modifiée.'
+  //feedbackMessage.value = 'Séance arrêtée. Votre progression n’a pas été modifiée.'
 }
 
 const confirmResetWeek = () => {
@@ -133,7 +133,7 @@ onUnmounted(() => {
           </p>
 
           <p class="program-card__duration">
-            Environ {{ saisonsStore.currentDayDuration }} min
+            Durée : {{ saisonsStore.currentDayDuration }} min
           </p>
         </div>
 
