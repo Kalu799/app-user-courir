@@ -26,7 +26,10 @@ export const useSessionStore = defineStore('session', () => {
     echauffement: '/sons/echauffement.mp3',
     trotte: '/sons/trottes.mp3',
     marche: '/sons/marches.mp3',
-    etirement: '/sons/etirements.mp3'
+    etirement: '/sons/etirements.mp3',
+    sprint: '/sons/sprints.mp3',
+    deboule: '/sons/deboules.mp3',
+    cours: '/sons/cours.mp3'
   }
 
   const startSession = async (day, saison) => {
