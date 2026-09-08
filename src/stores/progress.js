@@ -133,7 +133,9 @@ export const useProgressStore = defineStore('progress', () => {
     const firstDay = firstWeek.jours[0]
     if (!firstDay) return false
 
-    const saved = await saveProgress(firstDay.id)
+    // Une saison réinitialisée ne doit plus verrouiller le choix de programme.
+    // La prochaine séance ne sera enregistrée qu’au lancement du nouveau choix.
+    const saved = await saveProgress(null)
 
     if (saved) {
       currentDayId.value = firstDay.id
