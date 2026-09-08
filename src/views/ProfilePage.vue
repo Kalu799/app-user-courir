@@ -13,6 +13,7 @@ const progressStore = useProgressStore()
 const router = useRouter()
 
 const showResetOptions = ref(false)
+const errorMessage = ref('')
 
 onMounted(async () => {
   if (saisonsStore.saisons.length === 0) {
@@ -27,9 +28,16 @@ const confirmResetWeek = async () => {
 
   if (!confirmed) return
 
-  await progressStore.resetWeek(
+  errorMessage.value = ''
+
+  const reset = await progressStore.resetWeek(
     saisonsStore.currentSaison
   )
+
+  if (!reset) {
+    errorMessage.value = progressStore.errorMessage
+    return
+  }
 
   showResetOptions.value = false
 }
@@ -41,9 +49,16 @@ const confirmResetSaison = async () => {
 
   if (!confirmed) return
 
-  await progressStore.resetSaison(
+  errorMessage.value = ''
+
+  const reset = await progressStore.resetSaison(
     saisonsStore.currentSaison
   )
+
+  if (!reset) {
+    errorMessage.value = progressStore.errorMessage
+    return
+  }
 
   progressStore.hasStartedSaison = false
   showResetOptions.value = false
@@ -93,6 +108,10 @@ const logout = () => {
       <br><br>
 
       <div class="profile-progress">
+        <p v-if="errorMessage" class="profile-error">
+          {{ errorMessage }}
+        </p>
+
         <button class="profile-progress__toggle" @click="showResetOptions = !showResetOptions">
           Gérer ma progression
         </button>
@@ -203,6 +222,18 @@ const logout = () => {
 
 .profile-progress {
   margin-bottom: 32px;
+}
+
+.profile-error {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  background-color: rgb(180 59 59 / 8%);
+  color: #b43b3b;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .profile-progress__toggle {

@@ -55,6 +55,10 @@ export const useProgressStore = defineStore('progress', () => {
     hasStartedSaison.value = false
   }
 
+  const initializeProgress = (saison) => {
+    changeSaison(saison)
+  }
+
   const saveProgress = async (currentSessionId) => {
     if (!authStore.token) return false
 
@@ -118,36 +122,50 @@ export const useProgressStore = defineStore('progress', () => {
   }
 
   const resetSaison = async (saison) => {
+    if (!saison?.semaines?.length) {
+      errorMessage.value = 'Aucun programme disponible à réinitialiser.'
+      return false
+    }
+
     const firstWeek = saison.semaines[0]
-    if (!firstWeek) return
+    if (!firstWeek) return false
 
     const firstDay = firstWeek.jours[0]
-    if (!firstDay) return
+    if (!firstDay) return false
 
     const saved = await saveProgress(firstDay.id)
 
     if (saved) {
       currentDayId.value = firstDay.id
     }
+
+    return saved
   }
 
   const resetWeek = async (saison) => {
+    if (!saison?.semaines?.length) {
+      errorMessage.value = 'Aucun programme disponible à réinitialiser.'
+      return false
+    }
+
     const currentWeek = saison.semaines.find(
       week => week.jours.some(
         day => day.id === currentDayId.value
       )
     )
 
-    if (!currentWeek) return
+    if (!currentWeek) return false
 
     const firstDay = currentWeek.jours[0]
-    if (!firstDay) return
+    if (!firstDay) return false
 
     const saved = await saveProgress(firstDay.id)
 
     if (saved) {
       currentDayId.value = firstDay.id
     }
+
+    return saved
   }
 
   return {
@@ -156,6 +174,7 @@ export const useProgressStore = defineStore('progress', () => {
     hasStartedSaison,
     errorMessage,
     changeSaison,
+    initializeProgress,
     saveProgress,
     goToNextDay,
     resetSaison,

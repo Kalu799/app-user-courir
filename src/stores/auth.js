@@ -7,6 +7,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value)
 
+  const clearLocalProgress = () => {
+    // Cette progression appartient au dernier compte connecté sur cet appareil.
+    // La source de vérité entre deux connexions reste current_session_id en base.
+    for (const key of [
+      'currentDayId',
+      'currentSaisonId',
+      'hasStartedSaison',
+      'activeSession',
+    ]) {
+      localStorage.removeItem(key)
+    }
+  }
+
   const login = async (login, password) => {
     let response
 
@@ -37,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const data = await response.json()
 
+    clearLocalProgress()
     token.value = data.token
     user.value = data.user
 
@@ -48,6 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
 
     localStorage.removeItem('token')
+    clearLocalProgress()
   }
 
   const fetchMe = async () => {

@@ -186,6 +186,18 @@ export const useSessionStore = defineStore('session', () => {
     isPaused.value = true
   }
 
+  const clearSavedSession = () => {
+    clearRuntimeSession()
+
+    dayId.value = null
+    currentExerciseIndex.value = 0
+    remainingSeconds.value = 0
+    isPaused.value = false
+    sessionStatus.value = null
+
+    localStorage.removeItem('activeSession')
+  }
+
   const playExerciseSound = (exercise) => {
     const soundPath = exerciseSounds[exercise.type]
     if (!soundPath) return
@@ -260,6 +272,7 @@ export const useSessionStore = defineStore('session', () => {
     stopSession,
     saveSession,
     loadSession,
+    clearSavedSession,
     requestWakeLock,
     releaseWakeLock,
     handleVisibilityChange,

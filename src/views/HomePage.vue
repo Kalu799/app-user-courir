@@ -41,13 +41,24 @@ onMounted(async () => {
 
   await saisonsStore.getSaisons()
 
-  saisonsStore.restoreCurrentSession(authStore.user?.currentSessionId)
+  const restored = saisonsStore.restoreCurrentSession(
+    authStore.user?.currentSessionId
+  )
+
+  if (restored) {
+    sessionStore.loadSession()
+  }
+  else {
+    // Un nouveau compte, ou un compte sans séance en cours, démarre sans les
+    // valeurs enregistrées localement par le précédent utilisateur.
+    progressStore.initializeProgress(saisonsStore.saisons[0])
+    sessionStore.clearSavedSession()
+  }
 
   //console.log('currentDay:', saisonsStore.currentDay)
   //console.log('currentDayDuration:', saisonsStore.currentDayDuration)
   //console.log(saisons.value)
 
-  sessionStore.loadSession()
   sessionStore.initVisibilityListener()
 })
 
