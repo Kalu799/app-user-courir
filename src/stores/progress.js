@@ -83,6 +83,14 @@ export const useProgressStore = defineStore('progress', () => {
         throw new Error('La progression n’a pas pu être enregistrée')
       }
 
+      const data = await response.json()
+
+      // Garder le profil Pinia aligné sur MySQL évite de restaurer une ancienne
+      // séance quand le coureur revient immédiatement sur la page d’accueil.
+      if (authStore.user) {
+        authStore.user.currentSessionId = data.currentSessionId
+      }
+
       return true
     }
     catch {
