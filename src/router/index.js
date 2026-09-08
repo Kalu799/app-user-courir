@@ -35,6 +35,8 @@ router.beforeEach((to) => {
   const authStore = useAuthStore()
   const publicPages = ['/login', '/register']
 
+  // Ce garde accélère la navigation grâce au jeton local. App.vue contrôle en
+  // complément ce jeton auprès de l'API pour traiter une expiration ou une révocation.
   if (!authStore.isAuthenticated && !publicPages.includes(to.path)) { return '/login' }
 
   if (authStore.isAuthenticated && publicPages.includes(to.path)) { return '/' }

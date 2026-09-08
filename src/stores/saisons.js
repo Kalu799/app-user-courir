@@ -25,6 +25,8 @@ export const useSaisonsStore = defineStore('saisons', () => {
       const data = await response.json()
       saisons.value = Array.isArray(data) ? data : []
 
+      // Sans préférence locale, proposer le premier programme sans encore le
+      // considérer comme démarré : l'écriture serveur arrive au lancement.
       if (!currentSaison.value && saisons.value[0]) {
         progressStore.changeSaison(saisons.value[0])
       }
@@ -79,7 +81,7 @@ export const useSaisonsStore = defineStore('saisons', () => {
     return saison.semaines.find(week => week.jours.some(day => day.id === currentDay.value.id)) ?? null
   })
 
-  // petit résumé de la séance
+  // Le résumé est dérivé des exercices pour rester juste si le CMS modifie une durée.
   const currentDayDuration = computed(() => {
     if (!currentDay.value) return 0
 

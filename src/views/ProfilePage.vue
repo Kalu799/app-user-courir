@@ -60,6 +60,7 @@ const confirmResetSaison = async () => {
     return
   }
 
+  // L'API a retiré la séance active : l'accueil peut de nouveau proposer un programme.
   progressStore.hasStartedSaison = false
   showResetOptions.value = false
 }

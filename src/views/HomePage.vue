@@ -46,6 +46,8 @@ onMounted(async () => {
   )
 
   if (restored) {
+    // On ne relit le minuteur local qu'après avoir rattaché sa séance au compte
+    // connecté, ce qui évite de reprendre la séance d'un autre utilisateur.
     sessionStore.loadSession()
   }
   else {
@@ -63,7 +65,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // retire l'eventListener quand la vue est démontée pour ne pas en cumuler plusieurs au cas ou
+  // Le listener global doit être retiré pour éviter son cumul après chaque navigation.
   sessionStore.removeVisibilityListener()
 })
 

@@ -9,6 +9,8 @@ const route = useRoute()
 const router = useRouter()
 
 onMounted(async () => {
+  // Le jeton local est seulement un indice de connexion : l'API reste
+  // l'autorité qui confirme que la session est encore valide.
   await authStore.fetchMe()
 
   if (!authStore.isAuthenticated && !['/login', '/register'].includes(route.path)) {

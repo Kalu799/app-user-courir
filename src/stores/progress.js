@@ -6,6 +6,8 @@ import { useAuthStore } from './auth'
 export const useProgressStore = defineStore('progress', () => {
   const authStore = useAuthStore()
 
+  // Ces valeurs améliorent la reprise sur le même appareil. Elles sont effacées
+  // à la connexion, car elles ne constituent pas une progression par compte.
   const savedDayId = localStorage.getItem('currentDayId')
 
   const currentDayId = ref(savedDayId)
@@ -43,6 +45,8 @@ export const useProgressStore = defineStore('progress', () => {
   const changeSaison = (saison) => {
     if (!saison?.semaines?.length) return
 
+    // Le choix reste local tant que la première séance n'est pas lancée. Cela
+    // permet au coureur de comparer les programmes sans modifier son profil.
     currentSaisonId.value = saison.id
 
     const firstWeek = saison.semaines[0]
@@ -100,6 +104,8 @@ export const useProgressStore = defineStore('progress', () => {
   }
 
   const goToNextDay = async (saison) => {
+    // La hiérarchie est aplatie uniquement pour calculer le jour suivant sans
+    // dupliquer la logique de passage d'une semaine à l'autre.
     const allDays = saison.semaines.flatMap(semaine => semaine.jours)
 
     const currentIndex = allDays.findIndex(
@@ -169,6 +175,8 @@ export const useProgressStore = defineStore('progress', () => {
     const firstDay = currentWeek.jours[0]
     if (!firstDay) return false
 
+    // Contrairement à la réinitialisation complète, une semaine conserve une
+    // séance active : son premier jour devient donc la prochaine séance API.
     const saved = await saveProgress(firstDay.id)
 
     if (saved) {

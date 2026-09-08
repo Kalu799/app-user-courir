@@ -18,7 +18,8 @@ export const useSessionStore = defineStore('session', () => {
   const formattedTime = computed(() => {
     const minutes = Math.floor(remainingSeconds.value / 60)
     const seconds = remainingSeconds.value % 60
-    // .padStart(2, "0") fait en sorte que le string fasse min 2 char et si il n'en fait qu'un, on ajoute un "0" au début
+    // Le format reste stable pour éviter qu'un changement de largeur perturbe
+    // l'affichage du minuteur entre, par exemple, 9:59 et 10:00.
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   })
 
@@ -35,6 +36,8 @@ export const useSessionStore = defineStore('session', () => {
   const startSession = async (day, saison) => {
     if (!day?.exercices?.length) return
 
+    // On inscrit d'abord la séance côté serveur : le minuteur ne doit jamais
+    // démarrer sur une progression que l'utilisateur ne pourrait pas retrouver.
     const saved = await progressStore.saveProgress(day.id)
 
     if (!saved) {
@@ -47,13 +50,10 @@ export const useSessionStore = defineStore('session', () => {
     isPaused.value = false
 
     dayId.value = day.id
-    //console.log(dayId.value)
-
     currentExerciseIndex.value = 0
 
     const firstExercice = day.exercices[0]
     remainingSeconds.value = firstExercice.dureeMinutes * 60
-    //console.log(remainingSeconds.value)
 
     playExerciseSound(firstExercice)
 
@@ -69,8 +69,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const startTimer = (day, saison) => {
-
-    // check pour empêcher de lancer 2 fois le timer
+    // Une seule boucle doit piloter le décompte, y compris après une reprise.
     if (timerInterval) return
 
     timerInterval = setInterval(async () => {
@@ -85,12 +84,13 @@ export const useSessionStore = defineStore('session', () => {
         const nextExercice = day.exercices[currentExerciseIndex.value]
 
         if (!nextExercice) {
-          // arrêt du timer + audio
+          // On libère les ressources locales avant l'appel réseau, afin de ne
+          // pas laisser un son ou un intervalle actif en cas d'erreur API.
           clearRuntimeSession()
 
           await releaseWakeLock()
 
-          // passage au jour suivant
+          // La progression ne change visuellement qu'après confirmation API.
           const progressStatus = await progressStore.goToNextDay(saison)
 
           if (progressStatus === 'progress-error') {
@@ -101,7 +101,7 @@ export const useSessionStore = defineStore('session', () => {
             sessionStatus.value = 'completed'
           }
 
-          // reset
+          // Cet état représente uniquement le minuteur, pas le programme choisi.
           dayId.value = null
           currentExerciseIndex.value = 0
           remainingSeconds.value = 0
@@ -120,13 +120,10 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const pauseSession = async () => {
-    // met en pause
     isPaused.value = true
-    // arrêt timer + ausio
     clearRuntimeSession()
-    // unlock la veille de l'écran
     await releaseWakeLock()
-    // save la session en cours
+    // La pause est sauvegardée localement pour survivre à un rechargement de page.
     saveSession()
   }
 
@@ -145,12 +142,10 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const stopSession = async () => {
-    // arrêt timer + audio
     clearRuntimeSession()
 
     await releaseWakeLock()
 
-    // reset
     dayId.value = null
     currentExerciseIndex.value = 0
     remainingSeconds.value = 0
@@ -158,11 +153,14 @@ export const useSessionStore = defineStore('session', () => {
 
     sessionStatus.value = 'stopped'
 
-    // supp sauvegarde session dans localStorage
+    // L'arrêt abandonne seulement le minuteur en cours ; la progression du
+    // programme reste celle enregistrée au démarrage de cette séance.
     localStorage.removeItem('activeSession')
   }
 
   const saveSession = () => {
+    // Ce snapshot est volontairement limité à l'état du minuteur. La source de
+    // vérité de la progression entre comptes reste l'API, pas localStorage.
     const sessionData = {
       dayId: dayId.value,
       currentExerciseIndex: currentExerciseIndex.value,
@@ -176,7 +174,6 @@ export const useSessionStore = defineStore('session', () => {
     if (!savedSession) return
 
     const sessionData = JSON.parse(savedSession)
-    //console.log(sessionData)
 
     clearRuntimeSession()
 
@@ -201,34 +198,33 @@ export const useSessionStore = defineStore('session', () => {
   const playExerciseSound = (exercise) => {
     const soundPath = exerciseSounds[exercise.type]
     if (!soundPath) return
-    // évite de jouer 2 sons en même temps
+    // Un exercice ne doit jamais se superposer au signal du précédent.
     if (currentAudio) {
       currentAudio.pause()
       currentAudio.currentTime = 0
     }
-    // crée et lance le nouveau son
     currentAudio = new Audio(soundPath)
     currentAudio.play()
   }
 
   const requestWakeLock = async () => {
-    // si le wakelock n'est pas supporter -> stop
+    // L'API n'est pas disponible dans tous les navigateurs : l'absence de
+    // support ne doit pas empêcher la séance de fonctionner.
     if (!('wakeLock' in navigator)) return
 
     wakeLock = await navigator.wakeLock.request('screen')
-    //console.log('start wakeLock : ' + wakeLock)
   }
 
   const releaseWakeLock = async () => {
-    // si wakeLock n'est pas actif -> stop
     if (!wakeLock) return
 
     await wakeLock.release()
     wakeLock = null
-    //console.log('fin wakeLock : ' + wakeLock)
   }
 
   const handleVisibilityChange = async () => {
+    // Les navigateurs peuvent relâcher le verrou lors d'un changement d'onglet.
+    // On le redemande seulement pour une séance réellement active.
     if (document.visibilityState === 'visible' && dayId.value && !isPaused.value) {
       await requestWakeLock()
     }
@@ -243,13 +239,13 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const clearRuntimeSession = () => {
-    // arrêt du timer
+    // Les handles ne sont pas réactifs : ils représentent des ressources du
+    // navigateur et doivent être libérés ensemble à chaque sortie de séance.
     if (timerInterval) {
       clearInterval(timerInterval)
       timerInterval = null
     }
 
-    // arrêt de l'audio
     if (currentAudio) {
       currentAudio.pause()
       currentAudio.currentTime = 0
