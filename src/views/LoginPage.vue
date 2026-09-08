@@ -9,16 +9,21 @@ const router = useRouter()
 const login = ref('')
 const password = ref('')
 const errorMessage = ref('')
+const loading = ref(false)
 
 const submitLogin = async () => {
   errorMessage.value = ''
+  loading.value = true
 
   try {
     await authStore.login(login.value, password.value)
     router.push('/')
   }
-  catch {
-    errorMessage.value = 'Login ou mot de passe incorrect'
+  catch (error) {
+    errorMessage.value = error.message || 'Impossible de se connecter'
+  }
+  finally {
+    loading.value = false
   }
 }
 </script>
@@ -45,8 +50,8 @@ const submitLogin = async () => {
           {{ errorMessage }}
         </p>
 
-        <button class="auth-submit" type="submit">
-          Se connecter
+        <button class="auth-submit" type="submit" :disabled="loading">
+          {{ loading ? 'Connexion...' : 'Se connecter' }}
         </button>
       </form>
 
@@ -155,6 +160,11 @@ const submitLogin = async () => {
 
 .auth-submit:active {
   transform: scale(0.98);
+}
+
+.auth-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .auth-link {

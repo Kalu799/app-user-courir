@@ -8,12 +8,55 @@ export const useSaisonsStore = defineStore('saisons', () => {
   const progressStore = useProgressStore()
 
   const saisons = ref([])
+  const loading = ref(false)
+  const errorMessage = ref('')
 
   const getSaisons = async () => {
-    await fetch(`${import.meta.env.VITE_API_URL}/api/saisons`)
-      .then(res => res.json())
-      .then((res) => { saisons.value = res })
-      .catch(err => { console.log(err) })
+    loading.value = true
+    errorMessage.value = ''
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/saisons`)
+
+      if (!response.ok) {
+        throw new Error('Impossible de récupérer les programmes')
+      }
+
+      const data = await response.json()
+      saisons.value = Array.isArray(data) ? data : []
+
+      if (!currentSaison.value && saisons.value[0]) {
+        progressStore.changeSaison(saisons.value[0])
+      }
+    }
+    catch {
+      saisons.value = []
+      errorMessage.value = 'Impossible de récupérer les programmes.'
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  const restoreCurrentSession = (sessionId) => {
+    if (!sessionId) return false
+
+    // current_session_id est sur l’utilisateur, alors que la saison sélectionnée
+    // est un état local : on retrouve sa saison après une connexion ou un rechargement.
+    for (const saison of saisons.value) {
+      const day = saison.semaines
+        ?.flatMap(semaine => semaine.jours)
+        .find(item => item.id === sessionId)
+
+      if (day) {
+        progressStore.currentSaisonId = saison.id
+        progressStore.currentDayId = day.id
+        progressStore.hasStartedSaison = true
+        return true
+      }
+    }
+
+    return false
   }
 
   const currentSaison = computed(() => {
@@ -48,10 +91,13 @@ export const useSaisonsStore = defineStore('saisons', () => {
 
   return {
     saisons,
+    loading,
+    errorMessage,
     currentSaison,
     currentWeek,
     currentDay,
     currentDayDuration,
     getSaisons,
+    restoreCurrentSession,
   }
 })

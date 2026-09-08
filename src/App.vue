@@ -1,18 +1,18 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useProgressStore } from './stores/progress';
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
-const progressStore = useProgressStore()
 const route = useRoute()
+const router = useRouter()
 
 onMounted(async () => {
   await authStore.fetchMe()
 
-  if (authStore.user?.currentSessionId) {
-    progressStore.currentDayId = authStore.user.currentSessionId
+  if (!authStore.isAuthenticated && !['/login', '/register'].includes(route.path)) {
+    await router.replace('/login')
   }
 })
 </script>

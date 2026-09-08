@@ -8,22 +8,31 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value)
 
   const login = async (login, password) => {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          login,
-          password,
-        }),
-      }
-    )
+    let response
+
+    try {
+      response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            login,
+            password,
+          }),
+        }
+      )
+    }
+    catch {
+      throw new Error('Impossible de contacter le serveur')
+    }
 
     if (!response.ok) {
-      throw new Error('Identifiants incorrects')
+      const error = await response.json().catch(() => null)
+
+      throw new Error(error?.statusMessage || 'Identifiants incorrects')
     }
 
     const data = await response.json()
@@ -42,23 +51,33 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const fetchMe = async () => {
-    if (!token.value) return
+    if (!token.value) return null
 
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/auth/me`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
+    // Un token sauvegardé peut expirer, être révoqué ou être inaccessible si
+    // l’API est hors ligne. Dans tous les cas, il ne doit plus ouvrir les routes protégées.
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        logout()
+        return null
       }
-    )
 
-    if (!response.ok) {
-      logout()
-      return
+      user.value = await response.json()
+
+      return user.value
     }
-
-    user.value = await response.json()
+    catch {
+      logout()
+      return null
+    }
   }
 
   return {

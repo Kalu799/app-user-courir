@@ -33,6 +33,15 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   const startSession = async (day, saison) => {
+    if (!day?.exercices?.length) return
+
+    const saved = await progressStore.saveProgress(day.id)
+
+    if (!saved) {
+      sessionStatus.value = 'progress-error'
+      return
+    }
+
     progressStore.hasStartedSaison = true
 
     isPaused.value = false
@@ -84,7 +93,9 @@ export const useSessionStore = defineStore('session', () => {
           // passage au jour suivant
           const progressStatus = await progressStore.goToNextDay(saison)
 
-          if (progressStatus === 'season-completed') {
+          if (progressStatus === 'progress-error') {
+            sessionStatus.value = 'progress-error'
+          } else if (progressStatus === 'season-completed') {
             sessionStatus.value = 'season-completed'
           } else {
             sessionStatus.value = 'completed'

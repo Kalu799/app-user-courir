@@ -5,10 +5,12 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useProgressStore } from '@/stores/progress'
 import { useSaisonsStore } from '@/stores/saisons'
 import { useSessionStore } from '@/stores/session'
+import { useAuthStore } from '@/stores/auth'
 
 const progressStore = useProgressStore()
 const saisonsStore = useSaisonsStore()
 const sessionStore = useSessionStore()
+const authStore = useAuthStore()
 
 const confirmStopSession = async () => {
   const confirmed = window.confirm(
@@ -33,7 +35,13 @@ const startSession = () => {
 }
 
 onMounted(async () => {
+  if (!authStore.user) {
+    await authStore.fetchMe()
+  }
+
   await saisonsStore.getSaisons()
+
+  saisonsStore.restoreCurrentSession(authStore.user?.currentSessionId)
 
   //console.log('currentDay:', saisonsStore.currentDay)
   //console.log('currentDayDuration:', saisonsStore.currentDayDuration)
@@ -56,7 +64,15 @@ onUnmounted(() => {
   <section v-if="!sessionStore.dayId" class="program-screen">
     <div class="program-container">
 
-      <div v-if="!progressStore.hasStartedSaison" class="season-selector">
+      <p v-if="saisonsStore.loading" class="program-message">
+        Chargement des programmes...
+      </p>
+
+      <p v-else-if="saisonsStore.errorMessage" class="program-message program-message--error">
+        {{ saisonsStore.errorMessage }}
+      </p>
+
+      <div v-else-if="!progressStore.hasStartedSaison && saisonsStore.saisons.length" class="season-selector">
         <label for="saison-select" class="season-selector__label">
           Choisir mon programme
         </label>
@@ -83,6 +99,10 @@ onUnmounted(() => {
 
         <p v-if="sessionStore.sessionStatus === 'stopped'" class="session-feedback__message">
           Séance arrêtée. Votre progression n’a pas été modifiée.
+        </p>
+
+        <p v-if="sessionStore.sessionStatus === 'progress-error'" class="session-feedback__message session-feedback__message--error">
+          {{ progressStore.errorMessage }}
         </p>
       </div>
 
@@ -201,6 +221,22 @@ onUnmounted(() => {
   max-width: 480px;
 
   margin: 0 auto;
+}
+
+.program-message {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+
+  border-radius: 16px;
+
+  background-color: #ffffff;
+  color: #022c4d;
+  font-weight: 700;
+}
+
+.program-message--error,
+.session-feedback__message--error {
+  color: #b43b3b;
 }
 
 
